@@ -35,6 +35,7 @@ type Logger interface {
 	Panic(args ...interface{})
 	Fatal(args ...interface{})
 	Debugf(template string, args ...interface{})
+	//Tracef(string, ...interface{})
 	Infof(template string, args ...interface{})
 	Warnf(template string, args ...interface{})
 	Errorf(template string, args ...interface{})
