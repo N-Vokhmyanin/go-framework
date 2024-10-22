@@ -39,6 +39,7 @@ func NewGormLoggerAdapter(lg logger.Logger, cfg gormLogger.Config) gormLogger.In
 func (adapter *gormLoggerAdapter) LogMode(level gormLogger.LogLevel) gormLogger.Interface {
 	newAdapter := *adapter
 	newAdapter.LogLevel = level
+
 	return &newAdapter
 }
 
@@ -67,6 +68,7 @@ func (adapter *gormLoggerAdapter) Error(ctx context.Context, msg string, args ..
 func (adapter *gormLoggerAdapter) Trace(ctx context.Context, begin time.Time, fc func() (string, int64), err error) {
 	lg := adapter.getLogger(ctx)
 	elapsed := time.Since(begin)
+
 	switch {
 	case err != nil && !errors.Is(err, gorm.ErrRecordNotFound) && adapter.LogLevel >= gormLogger.Error:
 		sql, rows := fc()

@@ -24,6 +24,11 @@ type Migrater interface {
 	MakeFileMigration(ctx context.Context, name string) error
 }
 
+type migrater struct {
+	db *gorm.DB
+	*Config
+}
+
 func NewMigrater(db *gorm.DB, cfg *Config) Migrater {
 	if cfg == nil {
 		cfg = &Config{}
@@ -37,26 +42,23 @@ func NewMigrater(db *gorm.DB, cfg *Config) Migrater {
 	if cfg.TableName == "" {
 		cfg.TableName = DefaultMigrationsTableName
 	}
+
 	if db != nil {
 		db = db.Scopes(WithCustomMigrationsTableName(cfg.TableName))
 	}
+
 	return &migrater{
 		db:     db,
 		Config: cfg,
 	}
 }
 
-type migrater struct {
-	db *gorm.DB
-	*Config
-}
-
 func (m *migrater) Logger(_ context.Context) Logger {
 	return m.Log
 }
 
-func (m *migrater) newContext(ctx context.Context) Context {
-	return &migrationContext{
+func (m *migrater) newContext(ctx context.Context) (c Context, closure func(err error)) {
+	migCtx := &migrationContext{
 		Context: ctx,
 		db: m.db.Session(&gorm.Session{
 			Context: ctx,
@@ -64,10 +66,17 @@ func (m *migrater) newContext(ctx context.Context) Context {
 		}).Unscoped().Begin(),
 		log: m.Log,
 	}
+
+	return migCtx, func(err error) {
+		if err != nil {
+			migCtx.DB().Rollback()
+		} else {
+			migCtx.DB().Commit()
+		}
+	}
 }
 
 func (m *migrater) UpMigrations(ctx context.Context) error {
-
 	m.Log.Infof("Start migrations")
 
 	m.checkMigrationTable()
@@ -98,14 +107,8 @@ func (m *migrater) UpMigrations(ctx context.Context) error {
 }
 
 func (m *migrater) doUp(ctx context.Context, model *migrationModel) (err error) {
-	migCtx := m.newContext(ctx)
-	defer func() {
-		if err != nil {
-			migCtx.DB().Rollback()
-		} else {
-			migCtx.DB().Commit()
-		}
-	}()
+	migCtx, closure := m.newContext(ctx)
+	defer closure(err)
 
 	migration := pool.migrations[model.Name]
 	if migration == nil {
@@ -134,14 +137,8 @@ func (m *migrater) doUp(ctx context.Context, model *migrationModel) (err error) 
 }
 
 func (m *migrater) doDown(ctx context.Context, model *migrationModel) (err error) {
-	migCtx := m.newContext(ctx)
-	defer func() {
-		if err != nil {
-			migCtx.DB().Rollback()
-		} else {
-			migCtx.DB().Commit()
-		}
-	}()
+	migCtx, closure := m.newContext(ctx)
+	defer closure(err)
 
 	migration := pool.migrations[model.Name]
 	if migration == nil {
@@ -170,7 +167,6 @@ func (m *migrater) doDown(ctx context.Context, model *migrationModel) (err error
 }
 
 func (m *migrater) UpConcreteMigration(ctx context.Context, name string) error {
-
 	migration := pool.migrations[name]
 	if migration == nil {
 		return fmt.Errorf("migration '%s' not found", name)
@@ -190,7 +186,6 @@ func (m *migrater) UpConcreteMigration(ctx context.Context, name string) error {
 }
 
 func (m *migrater) DownConcreteMigration(ctx context.Context, name string) error {
-
 	migration := pool.migrations[name]
 	if migration == nil {
 		return fmt.Errorf("migration '%s' not found", name)

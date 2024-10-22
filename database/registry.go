@@ -27,16 +27,19 @@ func (r *connectionRegistry) Default() Connection {
 func (r *connectionRegistry) Get(name string) Connection {
 	r.Lock()
 	defer r.Unlock()
+
 	conn, ok := r.pool[name]
 	if !ok {
 		return nil
 	}
+
 	return conn
 }
 
 func (r *connectionRegistry) Register(name string, conn Connection) {
 	r.Lock()
 	defer r.Unlock()
+
 	r.pool[name] = conn
 }
 
@@ -49,5 +52,6 @@ func (r *connectionRegistry) HealthStatus(context.Context) grpcHealthV1.HealthCh
 			return grpcHealthV1.HealthCheckResponse_NOT_SERVING
 		}
 	}
+
 	return grpcHealthV1.HealthCheckResponse_SERVING
 }

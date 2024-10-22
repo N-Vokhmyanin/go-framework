@@ -39,6 +39,7 @@ func (d clickhouseDialector) DataTypeOf(field *schema.Field) string {
 				precision = fmt.Sprintf("(%d)", field.Precision)
 			}
 		}
+
 		return "DateTime" + precision
 	}
 
@@ -66,5 +67,6 @@ func (d clickhouseDialector) Explain(sql string, vars ...interface{}) string {
 		}
 		jVars[i] = jv
 	}
+
 	return fmt.Sprintf(strings.ReplaceAll(sql, "?", "%s"), jVars...)
 }

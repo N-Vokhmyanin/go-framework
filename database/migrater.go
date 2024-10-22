@@ -48,12 +48,14 @@ func (m *migraterService) migrater(connect bool) migorm.Migrater {
 	if connect {
 		db = di.Get[Connection](m.app).DB()
 	}
+
 	return migorm.NewMigrater(db, &m.cfg)
 }
 
 func (m *migraterService) newContext(ctx context.Context) context.Context {
 	ctx = ctxapp.Inject(ctx, m.app)
 	ctx = ctxlog.ToContext(ctx, m.logger)
+
 	return ctx
 }
 
@@ -63,21 +65,25 @@ func (m *migraterService) Logger(ctx context.Context) migorm.Logger {
 
 func (m *migraterService) UpMigrations(ctx context.Context) error {
 	ctx = m.newContext(ctx)
+
 	return m.migrater(true).UpMigrations(ctx)
 }
 
 func (m *migraterService) UpConcreteMigration(ctx context.Context, name string) error {
 	ctx = m.newContext(ctx)
+
 	return m.migrater(true).UpConcreteMigration(ctx, name)
 }
 
 func (m *migraterService) DownConcreteMigration(ctx context.Context, name string) error {
 	ctx = m.newContext(ctx)
+
 	return m.migrater(true).DownConcreteMigration(ctx, name)
 }
 
 func (m *migraterService) MakeFileMigration(ctx context.Context, name string) error {
 	ctx = m.newContext(ctx)
+
 	return m.migrater(false).MakeFileMigration(ctx, name)
 }
 

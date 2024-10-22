@@ -37,26 +37,23 @@ func (c *Config) IsDefault() bool {
 	if c == nil {
 		return false
 	}
+
 	return c.Name == ""
 }
 
 func (c *Config) UpperPrefix() string {
-	if c == nil {
+	if c == nil || c.IsDefault() {
 		return ""
 	}
-	if c.IsDefault() {
-		return ""
-	}
+
 	return strings.ToUpper(c.Name + "_")
 }
 
 func (c *Config) LowerPrefix() string {
-	if c == nil {
+	if c == nil || c.IsDefault() {
 		return ""
 	}
-	if c.IsDefault() {
-		return ""
-	}
+
 	return strings.ToLower(c.Name + "_")
 }
 
@@ -64,6 +61,7 @@ func (c *Config) Dialector() gorm.Dialector {
 	if c == nil {
 		return nil
 	}
+
 	switch c.Driver {
 	case MysqlDriver, "":
 		dsn := fmt.Sprintf(
@@ -74,6 +72,7 @@ func (c *Config) Dialector() gorm.Dialector {
 			c.DBPort,
 			c.DBName,
 		)
+
 		return mysql.New(mysql.Config{
 			DSN: dsn,
 		})
@@ -86,6 +85,7 @@ func (c *Config) Dialector() gorm.Dialector {
 			c.DBName,
 			c.DBPort,
 		)
+
 		return postgres.New(postgres.Config{
 			DSN: dsn,
 		})
@@ -98,8 +98,10 @@ func (c *Config) Dialector() gorm.Dialector {
 			c.DBPort,
 			c.DBName,
 		)
+
 		return NewClickhouseDialector(dsn)
 	}
+
 	return nil
 }
 
@@ -113,5 +115,6 @@ func (c Configs) Default() *Config {
 			return cfg
 		}
 	}
+
 	return nil
 }

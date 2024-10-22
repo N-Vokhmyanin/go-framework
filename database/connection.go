@@ -42,12 +42,14 @@ func NewGormConnection(dialector gorm.Dialector, gormCfg *gorm.Config, log logge
 
 func (c *gormConnection) DB() *gorm.DB {
 	c.Connect()
+
 	return c.db
 }
 
 func (c *gormConnection) Connect() {
 	c.initLock.Lock()
 	defer c.initLock.Unlock()
+
 	if c.initFlag {
 		return
 	}
@@ -82,7 +84,9 @@ func (c *gormConnection) Connect() {
 	check := func() {
 		c.Lock()
 		defer c.Unlock()
+
 		defer func() { _ = recover() }()
+
 		if !c.closed {
 			if !c.connected {
 				connect()
@@ -104,6 +108,7 @@ func (c *gormConnection) Connect() {
 		if c.connected {
 			break
 		}
+
 		time.Sleep(100 * time.Millisecond)
 	}
 
@@ -112,6 +117,7 @@ func (c *gormConnection) Connect() {
 func (c *gormConnection) Close() {
 	c.Lock()
 	defer c.Unlock()
+
 	if c.db != nil && c.connected {
 		sqlDB, err := c.db.DB()
 		if err == nil {
@@ -128,6 +134,7 @@ func (c *gormConnection) IsConnected() bool {
 func (c *gormConnection) Register(cb Callback) {
 	c.Lock()
 	defer c.Unlock()
+
 	c.callbacks = append(c.callbacks, cb)
 	if c.connected && c.db != nil {
 		cb(c.db)
@@ -138,6 +145,7 @@ func (c *gormConnection) runCallbacks(db *gorm.DB) {
 	for _, cb := range c.callbacks {
 		cb(db)
 	}
+
 	c.log.Infow("callbacks registered")
 }
 

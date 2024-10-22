@@ -45,6 +45,7 @@ func (p *gormProvider) Boot(a contracts.Application) {
 		a.Singleton(func(r ConnectionRegistry) Connection {
 			return r.Default()
 		})
+
 		a.Singleton(func(conn Connection, log logger.Logger) migorm.Migrater {
 			return NewMigraterService(
 				a,
@@ -59,7 +60,6 @@ func (p *gormProvider) Boot(a contracts.Application) {
 }
 
 func (p *gormProvider) Register(a contracts.Application) {
-
 	a.Make(func(
 		connRegistry ConnectionRegistry,
 		log logger.Logger,
@@ -70,7 +70,9 @@ func (p *gormProvider) Register(a contracts.Application) {
 				log.Error("unknown database driver: " + cfg.Driver)
 				continue
 			}
+
 			log = log.With(logger.WithComponent, "database."+dialector.Name())
+
 			gormCfg := &gorm.Config{}
 			if gormCfg.Logger == nil {
 				level, ok := GormLoggerLevels[cfg.LogLevel]
@@ -83,6 +85,7 @@ func (p *gormProvider) Register(a contracts.Application) {
 				}
 				gormCfg.Logger = NewGormLoggerAdapter(log, logCfg)
 			}
+
 			conn := NewGormConnection(dialector, gormCfg, log)
 			connRegistry.Register(cfg.Name, conn)
 		}

@@ -19,10 +19,12 @@ func NewMigrateCommands(app contracts.Application, mig migorm.Migrater) []*cli.C
 	cmd := &migrateCommand{
 		migrater: mig,
 	}
+
 	initService := func(ctx *cli.Context) error {
 		app.InitService()
 		return nil
 	}
+
 	return []*cli.Command{
 		{
 			Category: "migrate",
@@ -60,6 +62,7 @@ func (c *migrateCommand) exitOnError(fn func(*cli.Context) error) func(*cli.Cont
 		if err != nil {
 			return cli.Exit(err, 1)
 		}
+
 		return nil
 	}
 }
@@ -73,6 +76,7 @@ func (c *migrateCommand) migrateUp(ctx *cli.Context) error {
 	if err != nil {
 		return err
 	}
+
 	return c.migrater.UpConcreteMigration(ctx.Context, name)
 }
 
@@ -81,6 +85,7 @@ func (c *migrateCommand) migrateDown(ctx *cli.Context) error {
 	if err != nil {
 		return err
 	}
+
 	return c.migrater.DownConcreteMigration(ctx.Context, name)
 }
 
@@ -89,6 +94,7 @@ func (c *migrateCommand) migrateMake(ctx *cli.Context) error {
 	if err != nil {
 		return err
 	}
+
 	return c.migrater.MakeFileMigration(ctx.Context, name)
 }
 
@@ -99,5 +105,6 @@ func (c *migrateCommand) getMigrationName(ctx *cli.Context) (name string, err er
 	if !migrationNamePattern.MatchString(name) {
 		return name, errors.New("migration name must match " + migrationNamePattern.String())
 	}
+
 	return name, nil
 }
