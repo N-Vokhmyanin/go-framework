@@ -4,8 +4,6 @@ import (
 	"go.opentelemetry.io/otel/trace"
 )
 
-const HeaderTraceId = "X-Trace-ID"
-
 type (
 	Span            = trace.Span
 	SpanStartOption = trace.SpanStartOption
