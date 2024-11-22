@@ -7,7 +7,6 @@ import (
 	"github.com/N-Vokhmyanin/go-framework/contracts"
 	"github.com/N-Vokhmyanin/go-framework/logger"
 	"github.com/N-Vokhmyanin/go-framework/logger/grpc/ctxlog"
-	"github.com/N-Vokhmyanin/go-framework/tracer/trace"
 	"github.com/roylee0704/gron"
 	"go.uber.org/zap"
 	"sync"
@@ -71,7 +70,6 @@ func (s *gronService) createTaskFunc(task Task) func() {
 	return func() {
 		num += 1
 		var err error
-		var span trace.Span
 		taskId := fmt.Sprintf("%s-%d", task.Name(), num)
 
 		ctx, cancel := context.WithCancel(context.Background())
@@ -83,8 +81,7 @@ func (s *gronService) createTaskFunc(task Task) func() {
 			}
 		}()
 
-		ctx, span = trace.Start(ctx, "cron."+task.Name())
-		defer func() { trace.End(span, err) }()
+		s.log.Infof("cron.%s", task.Name())
 
 		ctx = ctxlog.ToContext(ctx, s.log)
 		ctxlog.AddFields(ctx, "cron.name", task.Name())

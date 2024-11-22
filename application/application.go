@@ -5,7 +5,6 @@ import (
 	"github.com/N-Vokhmyanin/go-framework/health"
 	"github.com/N-Vokhmyanin/go-framework/logger"
 	"github.com/N-Vokhmyanin/go-framework/logger/zap"
-	"github.com/N-Vokhmyanin/go-framework/tracer"
 	"github.com/N-Vokhmyanin/go-framework/utils/rfl"
 	"github.com/urfave/cli/v2"
 	"os"
@@ -40,7 +39,6 @@ func New(options ...Option) contracts.Application {
 	a.Provide(
 		newAppProvider(a),
 		a.loggerProvider,
-		tracer.NewProvider(),
 		health.NewProvider(),
 	)
 	return a

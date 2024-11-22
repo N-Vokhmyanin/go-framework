@@ -7,8 +7,6 @@ import (
 	"github.com/N-Vokhmyanin/go-framework/errors"
 	health "github.com/N-Vokhmyanin/go-framework/health/contracts"
 	"github.com/N-Vokhmyanin/go-framework/logger"
-	"github.com/N-Vokhmyanin/go-framework/tracer/trace"
-	"go.opentelemetry.io/otel/attribute"
 	grpcHealthV1 "google.golang.org/grpc/health/grpc_health_v1"
 	"sync"
 	"time"
@@ -120,12 +118,10 @@ func (s *amqpManager) GetMiddlewares() []Middleware {
 }
 
 func (s *amqpManager) Push(ctx context.Context, job Job, opts ...JobOptionFunc) (err error) {
-	ctx, span := trace.Start(ctx, "amqpManager.Push")
-	span.SetAttributes(
-		attribute.String("queue", job.Queue()),
-		attribute.String("name", job.Name()),
+	s.log.Infow("amqpManager.Push",
+		"queue", job.Queue(),
+		"name", job.Name(),
 	)
-	defer func() { trace.End(span, err) }()
 
 	if queue, ok := s.connectors[job.Queue()]; !ok {
 		return ErrUnknownQueue{Name: job.Queue()}

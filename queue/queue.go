@@ -8,7 +8,6 @@ import (
 	"github.com/N-Vokhmyanin/go-framework/cache"
 	"github.com/N-Vokhmyanin/go-framework/contracts"
 	"github.com/N-Vokhmyanin/go-framework/logger"
-	"github.com/N-Vokhmyanin/go-framework/tracer/trace"
 	"github.com/eko/gocache/v2/store"
 	"github.com/go-redis/redis/v8"
 	amqp "github.com/rabbitmq/amqp091-go"
@@ -103,8 +102,7 @@ func (q *amqpConnector) Handler(handlers ...Handler) {
 }
 
 func (q *amqpConnector) Push(ctx context.Context, job Job, opts ...JobOptionFunc) (err error) {
-	ctx, span := trace.Start(ctx, "amqpConnector.Push")
-	defer func() { trace.End(span, err) }()
+	q.log.Info("amqpConnector.Push")
 
 	if !q.initConnection() {
 		return ErrNotConnected{}

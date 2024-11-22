@@ -129,7 +129,8 @@ func (w *amqpWorker) process(msg amqp.Delivery) (err error) {
 	var span trace.Span
 	ctx, w.cancelFunc = context.WithCancel(context.Background())
 
-	ctx, span = trace.Start(ctx, "job."+jobWrapper.JobName)
+	w.log.Infof("job.%s", jobWrapper.JobName)
+
 	span.SetAttributes(
 		attribute.String("job.name", jobWrapper.JobName),
 		attribute.String("job.body", jobWrapper.JobBody),
